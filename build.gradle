@@ -1,0 +1,11 @@
+apply plugin: 'java'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.jsoup:jsoup:1.8.2'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    testCompile 'junit:junit:4.12'
+}
