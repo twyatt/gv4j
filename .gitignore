@@ -1,4 +1,12 @@
+# Gradle
 .gradle
 gradle
 
+# IntelliJ IDEA
+*.iml
+.idea
+
+build
+
+# OS X
 .DS_Store
