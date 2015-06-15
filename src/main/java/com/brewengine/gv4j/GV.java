@@ -1,5 +1,8 @@
 package com.brewengine.gv4j;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.gson.Gson;
 import com.squareup.okhttp.*;
 import org.jsoup.Jsoup;
@@ -8,9 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.HttpCookie;
+import java.net.*;
 import java.util.List;
 
 public class GV {
@@ -18,42 +19,22 @@ public class GV {
 	public final int API_VERSION = 13;
 
 	private final OkHttpClient client = new OkHttpClient();
-	private final CookieManager cookieManager = new CookieManager();
+	private final CookieManager cookieManager;
 
 	private final Gson gson = new Gson();
 
 	public GV() {
+		this(new CookieManager());
+	}
+
+	public GV(CookieManager cookieManager) {
+		this.cookieManager = cookieManager;
+
 		// http://stackoverflow.com/a/24267060/196486
 		cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
 		client.setCookieHandler(cookieManager);
 
 //		client.networkInterceptors().add(new LoggingInterceptor());
-	}
-
-	/**
-	 * Attempts to resume a previous GV session.
-	 *
-	 * If successful then it requires one less request than the login procedure.
-	 *
-	 * @return
-	 * @throws IOException
-	 */
-	public boolean resume() throws IOException {
-		Request request = new Request.Builder()
-				.url("https://www.google.com/voice/m")
-				.build();
-
-		Response response = client.newCall(request).execute();
-		if (!response.isSuccessful()) {
-			throw new IOException("Unexpected response: " + response);
-		}
-
-		String body = response.body().string();
-		Document document = Jsoup.parse(body);
-
-		Element loginForm = getLoginFormElement(document);
-		boolean isLoggedIn = loginForm == null;
-		return isLoggedIn;
 	}
 
 	/**
@@ -64,6 +45,9 @@ public class GV {
 	 * @throws IOException
 	 */
 	public void login(String username, String password) throws IOException {
+		checkNotNull(username);
+		checkNotNull(password);
+
 		Request request = new Request.Builder()
 				.url("https://accounts.google.com/ServiceLogin?service=grandcentral&continue=https://www.google.com/voice/m?initialauth&followup=https://www.google.com/voice/m?initialauth")
 				.build();
@@ -140,9 +124,7 @@ public class GV {
 
 	private GVJson fetchSettingsJson() throws IOException {
 		HttpCookie gvx = findCookieByName("gvx");
-		if (gvx == null) {
-			throw new IllegalStateException("Missing gvx cookie.");
-		}
+		checkState(gvx != null, "Missing gvx cookie.");
 
 		MediaType contentType = MediaType.parse("text/plain; charset=UTF-8");
 		String content = "{gvx: \"" + gvx.getValue() + "\"}";
@@ -188,7 +170,9 @@ public class GV {
 		togglePhone(phone, false);
 	}
 
-	public void togglePhone(Phone phone, boolean enable) throws IOException {
+	private void togglePhone(Phone phone, boolean enable) throws IOException {
+		checkNotNull(phone);
+
 		HttpCookie gvx = findCookieByName("gvx");
 		if (gvx == null) {
 			throw new IllegalStateException("Missing gvx cookie.");

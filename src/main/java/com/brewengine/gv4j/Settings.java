@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class Settings {
 
 	private List<Phone> phones = new ArrayList<>();
@@ -14,6 +16,8 @@ public class Settings {
 	}
 
 	public static Settings valueOf(GVJson json) {
+		checkNotNull(json);
+
 		List<Integer> disabledList = json.settingsResponse.userPreferences.defaultCallSettings.disabledForwardingId;
 
 		Settings settings = new Settings();
