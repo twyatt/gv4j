@@ -156,6 +156,92 @@ public class GVJsonTest {
         assertNull(findPhoneById(settings.getPhones(), 9));
     }
 
+    @Test
+    public void settingsFromJsonNoDisabledForwardingIdsTest() {
+        String string =
+            "{" +
+                "\"app_version\":13," +
+                "\"settings_response\":{" +
+                    "\"user_preferences\":{" +
+                        "\"default_call_settings\":{" +
+                        "}," +
+                        "\"forwarding\":[" +
+                            "{" +
+                                "\"behavior_on_redirect\":1," +
+                                "\"id\":1," +
+                                "\"name\":\"Phone 1\"," +
+                                "\"phone_number\":\"+15555551212\"," +
+                                "\"policy_bitmask\":3," +
+                                "\"sms_enabled\":false," +
+                                "\"type\":2" +
+                            "}," +
+                            "{" +
+                                "\"behavior_on_redirect\":1," +
+                                "\"id\":4," +
+                                "\"name\":\"Phone 2\"," +
+                                "\"phone_number\":\"+15555550000\"," +
+                                "\"policy_bitmask\":3," +
+                                "\"sms_enabled\":false," +
+                                "\"type\":2" +
+                            "}," +
+                            "{" +
+                                "\"behavior_on_redirect\":1," +
+                                "\"id\":8," +
+                                "\"name\":\"Google Talk\"," +
+                                "\"phone_number\":\"example@gmail.com\"," +
+                                "\"policy_bitmask\":3," +
+                                "\"sms_enabled\":false," +
+                                "\"type\":3" +
+                            "}" +
+                        "]" +
+                    "}" +
+                "}" +
+            "}";
+
+        Gson gson = new Gson();
+        GVJson json = gson.fromJson(string, GVJson.class);
+        Settings settings = Settings.valueOf(json);
+
+        Phone phone1 = findPhoneById(settings.getPhones(), 1);
+        assertNotNull(phone1);
+        assertEquals(1, phone1.getBehaviorOnRedirect());
+        assertEquals("Phone 1",      phone1.getName());
+        assertEquals("+15555551212", phone1.getPhoneNumber());
+        assertEquals(3,              phone1.getPolicyBitmask());
+        assertEquals(false,          phone1.isSmsEnabled());
+        assertEquals(2, phone1.getType());
+        assertTrue(phone1.isEnabled());
+
+        assertNull(findPhoneById(settings.getPhones(), 2));
+        assertNull(findPhoneById(settings.getPhones(), 3));
+
+        Phone phone4 = findPhoneById(settings.getPhones(), 4);
+        assertNotNull(phone4);
+        assertEquals(1,              phone4.getBehaviorOnRedirect());
+        assertEquals("Phone 2",      phone4.getName());
+        assertEquals("+15555550000", phone4.getPhoneNumber());
+        assertEquals(3,              phone4.getPolicyBitmask());
+        assertEquals(false,          phone4.isSmsEnabled());
+        assertEquals(2,              phone4.getType());
+        assertTrue(phone4.isEnabled());
+
+        assertNull(findPhoneById(settings.getPhones(), 5));
+        assertNull(findPhoneById(settings.getPhones(), 6));
+        assertNull(findPhoneById(settings.getPhones(), 7));
+
+        Phone phone8 = findPhoneById(settings.getPhones(), 8);
+        assertNotNull(phone8);
+        assertEquals(1,                   phone8.getBehaviorOnRedirect());
+        assertEquals("Google Talk",       phone8.getName());
+        assertEquals("example@gmail.com", phone8.getPhoneNumber());
+        assertEquals(3,                   phone8.getPolicyBitmask());
+        assertEquals(false,               phone8.isSmsEnabled());
+        assertEquals(3,                   phone8.getType());
+        assertTrue(phone8.isEnabled());
+
+        assertNull(findPhoneById(settings.getPhones(), 9));
+    }
+
     private static GVJson.Forward findForwardById(List<GVJson.Forward> forwarding, int id) {
         for (GVJson.Forward forward : forwarding) {
             if (forward.id == id) {

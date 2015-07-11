@@ -28,7 +28,7 @@ public class Settings {
             phone.name = forward.name;
             phone.type = forward.type;
             phone.phoneNumber = forward.phoneNumber;
-            phone.isEnabled = !disabledList.contains(phone.id);
+            phone.isEnabled = disabledList == null || !disabledList.contains(phone.id);
             phone.isSmsEnabled = forward.smsEnabled;
             phone.policyBitmask = forward.policyBitmask;
             phone.behaviorOnRedirect = forward.behaviorOnRedirect;
