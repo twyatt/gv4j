@@ -8,7 +8,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Settings {
 
-    private List<Phone> phones = new ArrayList<>();
+    private List<Phone> phones = new ArrayList<Phone>();
     private List<Phone> unmodifiablePhones = Collections.unmodifiableList(phones);
 
     public List<Phone> getPhones() {
