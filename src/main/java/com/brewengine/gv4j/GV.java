@@ -37,6 +37,19 @@ public class GV {
 //		client.networkInterceptors().add(new LoggingInterceptor());
     }
 
+    public CookieManager getCookieManager() {
+        return cookieManager;
+    }
+
+    /**
+     * Determines if we are logged in by checking for the presence of the 'gvx' cookie.
+     *
+     * @return
+     */
+    public boolean isLoggedIn() {
+        return findCookieByName("gvx") != null;
+    }
+
     /**
      * Attempts to login to GV using the provided credentials.
      *
@@ -101,13 +114,30 @@ public class GV {
             throw new IOException("Unexpected response: " + response);
         }
 
-        /*
-         * Confirm we are logged in by checking for the presence of the 'gvx'
-         * cookie.
-         */
-        HttpCookie gvx = findCookieByName("gvx");
-        if (gvx == null) {
+        if (!isLoggedIn()) {
             throw new IOException("Missing gvx cookie.");
+        }
+    }
+
+    /**
+     * Requests to be logged out.
+     *
+     * Optionally, for safe measure, after performing the logout you can clear
+     * the cookies:
+     * <code>
+     *     getCookieManager().getCookieStore().removeAll();
+     * </code>
+     *
+     * @throws IOException
+     */
+    public void logout() throws IOException {
+        Request request = new Request.Builder()
+                .url("https://www.google.com/voice/m/logout")
+                .build();
+
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new IOException("Unexpected response: " + response);
         }
     }
 

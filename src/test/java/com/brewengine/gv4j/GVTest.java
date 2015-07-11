@@ -46,6 +46,26 @@ public class GVTest {
         assertTrue(phoneAfter.isEnabled());
     }
 
+    /**
+     * Logs in and confirms that we are in a logged in state (isLogged in checks
+     * for the presence of the 'gvx' cookie), then logs out and confirms a
+     * logged out state.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void logoutTest() throws IOException {
+        if ("username".equalsIgnoreCase(USERNAME)) {
+            fail("Configure GV username/password before running this test.");
+        }
+
+        GV gv = new GV();
+        gv.login(USERNAME, PASSWORD);
+        assertTrue(gv.isLoggedIn());
+        gv.logout();
+        assertFalse(gv.isLoggedIn());
+    }
+
     private static Phone findPhoneById(List<Phone> phones, int id) {
         for (Phone phone : phones) {
             if (phone.getId() == id) {
