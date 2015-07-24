@@ -1,4 +1,6 @@
-# gv4j
+# About
+[![Build Status](https://travis-ci.org/twyatt/gv4j.svg?branch=master)](https://travis-ci.org/twyatt/gv4j)
+
 Unofficial Google Voice API for Java created by reverse engineering the Google Voice mobile site.
 
 See the [Wiki](../../wiki) for more details.

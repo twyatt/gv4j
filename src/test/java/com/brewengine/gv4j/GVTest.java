@@ -1,12 +1,14 @@
 package com.brewengine.gv4j;
 
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
+@Ignore("Configure credentials before enabling these tests.")
 public class GVTest {
 
     private static final String USERNAME = "username";
