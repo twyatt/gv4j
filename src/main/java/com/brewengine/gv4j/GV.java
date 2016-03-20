@@ -1,8 +1,5 @@
 package com.brewengine.gv4j;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import com.google.gson.Gson;
 import com.squareup.okhttp.*;
 import org.jsoup.Jsoup;
@@ -11,8 +8,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.HttpCookie;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class GV {
 
@@ -77,10 +79,32 @@ public class GV {
             throw new IOException("Failed to find login form element.");
         }
 
-        login(loginForm, username, password);
+        // 1st login request we send username
+        response = login(loginForm, username, password);
+        if (!response.isSuccessful()) {
+            throw new IOException("Unexpected response: " + response);
+        }
+//        System.out.println("response="+response.body().string());
+        body = response.body().string();
+        document = Jsoup.parse(body);
+        loginForm = getLoginFormElement(document);
+        if (loginForm == null) {
+            throw new IOException("Failed to find login form element (2).");
+        }
+
+        // 2nd login request we send password
+        response = login(loginForm, username, password);
+        if (!response.isSuccessful()) {
+            throw new IOException("Unexpected response: " + response + "(2)");
+        }
+//        System.out.println("response="+response.body().string());
+
+        if (!isLoggedIn()) {
+            throw new IOException("Missing gvx cookie.");
+        }
     }
 
-    private void login(Element form, String username, String password) throws IOException {
+    private Response login(Element form, String username, String password) throws IOException {
         String action = form.attr("action");
         Elements inputs = form.getElementsByTag("input");
         if (inputs == null || inputs.size() == 0) {
@@ -93,9 +117,9 @@ public class GV {
             String value = input.attr("value");
 
             if (!name.isEmpty()) {
-                if (name.equalsIgnoreCase("Email")) {
+                if (name.equalsIgnoreCase("Email") && value.isEmpty()) {
                     builder.add(name, username);
-                } else if (name.equalsIgnoreCase("Passwd")) {
+                } else if (name.equalsIgnoreCase("Passwd") && value.isEmpty()) {
                     builder.add(name, password);
                 } else {
                     builder.add(name, value);
@@ -109,14 +133,7 @@ public class GV {
                 .post(requestBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new IOException("Unexpected response: " + response);
-        }
-
-        if (!isLoggedIn()) {
-            throw new IOException("Missing gvx cookie.");
-        }
+        return client.newCall(request).execute();
     }
 
     /**
@@ -214,15 +231,15 @@ public class GV {
 
         StringBuilder builder = new StringBuilder();
         builder.append("m=set");
-        builder.append("&fp_id0=" + phone.getId());
-        builder.append("&fp_name0=" + phone.getName());
-        builder.append("&fp_num0=" + phone.getPhoneNumber());
-        builder.append("&fp_type0=" + phone.getType());
-        builder.append("&fp_pol0=" + phone.getPolicyBitmask());
-        builder.append("&fp_sen0=" + phone.isSmsEnabled());
-        builder.append("&fp_red0=" + phone.getBehaviorOnRedirect());
-        builder.append("&fp_en0=" + enable);
-        builder.append("&v=" + API_VERSION);
+        builder.append("&fp_id0=").append(phone.getId());
+        builder.append("&fp_name0=").append(phone.getName());
+        builder.append("&fp_num0=").append(phone.getPhoneNumber());
+        builder.append("&fp_type0=").append(phone.getType());
+        builder.append("&fp_pol0=").append(phone.getPolicyBitmask());
+        builder.append("&fp_sen0=").append(phone.isSmsEnabled());
+        builder.append("&fp_red0=").append(phone.getBehaviorOnRedirect());
+        builder.append("&fp_en0=").append(enable);
+        builder.append("&v=").append(API_VERSION);
         String params = builder.toString();
 
         Request request = new Request.Builder()

@@ -49,7 +49,7 @@ public class GVTest {
     }
 
     /**
-     * Logs in and confirms that we are in a logged in state (isLogged in checks
+     * Logs in and confirms that we are in a logged in state (isLoggedIn checks
      * for the presence of the 'gvx' cookie), then logs out and confirms a
      * logged out state.
      *
